@@ -29,17 +29,16 @@ jobs:
           docker compose up -d
           ./scripts/wait-script.sh
         env:
-          WAIT_PORTS: 8080,8070,8060,8050
-
-      # TODO setup variant, service and port
+          - WAIT_PORTS=8080,8070,8060,8050
 
       - name: Run API Tests
-        timeout-minutes: 5
-        run: ./scripts/test-script.sh
-        env:
-          VARIANT: <variant>
-          SERVICE_NAME: <your service name>
-          PORT_NUMBER: <port number>
+        uses: matt-ball/newman-action@master
+        with:
+          # TODO insert your variant
+          collection: <variant>/postman/collection.json
+          environment: <variant>/postman/environment.json
+          delayRequest: 100
+          reporters: '[ "cli" ]'
 
       - uses: education/autograding@v1
         id: autograder
@@ -50,7 +49,7 @@ jobs:
         with:
           google_token: ${{secrets.GOOGLE_API_KEY}}
           sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
-          homework_number: 3
+          homework_number: 2
           user_column: 'D'
           column_offset: 'F'
           mark: "'+"
