@@ -1,4 +1,4 @@
-package ru.gilko.paymentimpl.impl;
+package ru.gilko.paymentimpl.controller_impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
