@@ -40,14 +40,14 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public void changeAvailability(UUID carId) {
+    public void changeAvailability(UUID carId, boolean availability) {
         Car car = carRepository.findByCarUid(carId).orElseThrow(() -> {
             log.info("Request for changing availability for non existing car {}", carId);
 
             return new NoSuchEntityException("There is no car with id = %s".formatted(carId));
         });
 
-        car.setAvailability(!car.isAvailability());
+        car.setAvailability(availability);
         carRepository.save(car);
 
         log.info("Changed car {} availability to {}", carId, car.isAvailability());

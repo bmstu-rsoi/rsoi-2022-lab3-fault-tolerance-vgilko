@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface CarService {
     Page<CarOutDto> getCars(boolean showAll, Pageable pageable);
 
-    void changeAvailability(UUID carId);
+    void changeAvailability(UUID carId, boolean availability);
 
     List<CarOutDto> getCars(Set<UUID> carUids);
 

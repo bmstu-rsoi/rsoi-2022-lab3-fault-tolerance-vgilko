@@ -9,7 +9,6 @@ import ru.gilko.carsapi.controller.CarController;
 import ru.gilko.carsapi.dto.CarOutDto;
 import ru.gilko.carsimpl.service.api.CarService;
 
-import java.nio.channels.ReadPendingException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -49,10 +48,10 @@ public class CarControllerImpl implements CarController {
     }
 
     @Override
-    public ResponseEntity<?> changeAvailability(UUID carId) {
+    public ResponseEntity<?> changeAvailability(UUID carId, boolean availability) {
         log.info("Request for changing availability for car {}", carId);
 
-        carService.changeAvailability(carId);
+        carService.changeAvailability(carId, availability);
 
         return ResponseEntity.ok().build();
     }

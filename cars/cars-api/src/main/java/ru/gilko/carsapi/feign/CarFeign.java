@@ -25,5 +25,5 @@ public interface CarFeign {
     List<CarOutDto> getCars(List<UUID> carUids);
 
     @PutMapping(path = ControllerUrl.CAR_URL_WITH_ID)
-    ResponseEntity<?> changeAvailability(@PathVariable UUID carId);
+    ResponseEntity<?> changeAvailability(@PathVariable UUID carId, @RequestParam boolean availability);
 }
