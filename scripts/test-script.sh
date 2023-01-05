@@ -25,9 +25,9 @@ success() {
   newman run \
     --delay-request=100 \
     --folder=success \
-    --export-environment "$variant"/postman/environment.json \
-    --environment "$variant"/postman/environment.json \
-    "$variant"/postman/collection.json
+    --export-environment info/variants/"$variant"/postman/environment.json \
+    --environment info/variants/"$variant"/postman/environment.json \
+    info/variants/"$variant"/postman/collection.json
 }
 
 step() {
@@ -44,9 +44,9 @@ step() {
   newman run \
     --delay-request=100 \
     --folder=step"$step" \
-    --export-environment "$variant"/postman/environment.json \
-    --environment "$variant"/postman/environment.json \
-    "$variant"/postman/collection.json
+    --export-environment info/variants/"$variant"/postman/environment.json \
+    --environment info/variants/"$variant"/postman/environment.json \
+    info/variants/"$variant"/postman/collection.json
 
   printf "=== Step %d completed ===\n" "$step"
 }
