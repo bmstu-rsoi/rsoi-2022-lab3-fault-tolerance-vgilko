@@ -18,7 +18,7 @@ public interface GatewayService {
 
     RentalCreationOutDto bookCar(String userName, CarBookDto carBookDto);
 
-    void finishRental(String username, UUID rentalUid);
+    boolean finishRental(String username, UUID rentalUid);
 
-    void cancelRental(String username, UUID rentalUid);
+    boolean cancelRental(String username, UUID rentalUid);
 }
