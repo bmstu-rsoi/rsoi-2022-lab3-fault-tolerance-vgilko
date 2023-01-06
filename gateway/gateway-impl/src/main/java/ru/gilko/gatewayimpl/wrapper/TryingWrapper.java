@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 @Data
 public class TryingWrapper {
-    public static final int TIMEOUT = 30;
+    public static final int TIMEOUT = 50;
     private LocalDateTime timoutTimestamp;
     private LocalDateTime lastCall;
     private Supplier<Boolean> runnable;

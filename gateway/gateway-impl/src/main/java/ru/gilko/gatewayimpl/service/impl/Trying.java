@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public class Trying {
 
     public static final int SLEEP_TIME = 2000;
-    public static final int CALL_TIMEOUT = 1000;
+    public static final int CALL_TIMEOUT = 2000;
 
     private final Queue<TryingWrapper> requests = new LinkedBlockingDeque<>();
     private final Set<Integer> currentRequestHashes = new HashSet<>();
