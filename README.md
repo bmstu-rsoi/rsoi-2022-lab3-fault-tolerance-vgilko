@@ -66,7 +66,7 @@
 
 Распределение вариантов заданий аналогично [ЛР #2](https://github.com/bmstu-rsoi/lab2-template).
 
-1. [Flight Booking System](v1/README.md)
-2. [Hotels Booking System](v2/README.md)
-3. [Car Rental System](v3/README.md)
-4. [Library System](v4/README.md)
+1. [Flight Booking System](info/variants/v1/README.md)
+2. [Hotels Booking System](info/variants/v2/README.md)
+3. [Car Rental System](info/variants/v3/README.md)
+4. [Library System](info/variants/v4/README.md)

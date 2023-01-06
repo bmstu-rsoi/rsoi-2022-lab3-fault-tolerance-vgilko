@@ -25,9 +25,9 @@ success() {
   newman run \
     --delay-request=100 \
     --folder=success \
-    --export-environment "$variant"/postman/environment.json \
-    --environment "$variant"/postman/environment.json \
-    "$variant"/postman/collection.json
+    --export-environment info/variants/"$variant"/postman/environment.json \
+    --environment info/variants/"$variant"/postman/environment.json \
+    info/variants/"$variant"/postman/collection.json
 }
 
 step() {
@@ -36,17 +36,17 @@ step() {
 
   printf "=== Step %d: %s %s ===\n" "$step" "$operation" "$service"
 
-  docker compose "$operation" "$service"
+  docker-compose "$operation" "$service"
   if [[ "$operation" == "start" ]]; then
-    "$path"/wait-for.sh -t 120 "http://localhost:$port/manage/health" -- echo "Host localhost:$port is active"
+    "$path"/wait-for.sh -t 120 "http://localhost:$port/$service/manage/health" -- echo "Host localhost:$port is active"
   fi
 
   newman run \
     --delay-request=100 \
     --folder=step"$step" \
-    --export-environment "$variant"/postman/environment.json \
-    --environment "$variant"/postman/environment.json \
-    "$variant"/postman/collection.json
+    --export-environment info/variants/"$variant"/postman/environment.json \
+    --environment info/variants/"$variant"/postman/environment.json \
+    info/variants/"$variant"/postman/collection.json
 
   printf "=== Step %d completed ===\n" "$step"
 }

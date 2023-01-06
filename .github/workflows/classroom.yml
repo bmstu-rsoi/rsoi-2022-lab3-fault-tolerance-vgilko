@@ -15,9 +15,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: docker/setup-buildx-action@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
 
-      # TODO build and run unit tests
+      - name: Build with Maven
+        uses: stCarolas/setup-maven@v4.4
+        with:
+          maven-version: 3.6.3
+      - name: cars build
+        run: mvn -f cars/pom.xml --batch-mode --update-snapshots clean install -DskipTests
+      - name: payment build
+        run: mvn -f payment/pom.xml --batch-mode --update-snapshots clean install -DskipTests
+      - name: rental build
+        run: mvn -f rental/pom.xml --batch-mode --update-snapshots clean install -DskipTests
+      - name: gateway build
+        run: mvn -f gateway/pom.xml --batch-mode --update-snapshots clean install -DskipTests
 
       - name: Build images
         timeout-minutes: 10
@@ -29,17 +44,22 @@ jobs:
           docker compose up -d
           ./scripts/wait-script.sh
         env:
-          WAIT_PORTS: 8080,8070,8060,8050
-
-      # TODO setup variant, service and port
+          WAIT_PORTS: 8080/api/v1,8070/cars,8060/rental,8050/payment
 
       - name: Run API Tests
         timeout-minutes: 5
         run: ./scripts/test-script.sh
         env:
-          VARIANT: <variant>
-          SERVICE_NAME: <your service name>
-          PORT_NUMBER: <port number>
+          VARIANT: v3
+          SERVICE_NAME: payment
+          PORT_NUMBER: 8050
+
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+        with:
+          images: 'library/postgres:13,gateway,rental,payment,cars'
+          tail: '250'
 
       - uses: education/autograding@v1
         id: autograder
