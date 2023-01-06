@@ -1,7 +1,11 @@
 package ru.gilko.gatewayimpl.controller_impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import ru.gilko.gatewayapi.controller.GatewayController;
 import ru.gilko.gatewayapi.dto.CarBookDto;
@@ -9,9 +13,11 @@ import ru.gilko.gatewayapi.dto.car.CarDto;
 import ru.gilko.gatewayapi.dto.rental.RentalCreationOutDto;
 import ru.gilko.gatewayapi.dto.rental.RentalDto;
 import ru.gilko.gatewayapi.dto.wrapper.PageableCollectionOutDto;
+import ru.gilko.gatewayapi.exception.ServiceUnavailableException;
 import ru.gilko.gatewayimpl.service.api.GatewayService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -71,4 +77,12 @@ public class GatewayControllerImpl implements GatewayController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<?> serviceUnavailable(RuntimeException e) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.put("Content-type", List.of("application/json"));
+        return new ResponseEntity<>(Map.of("message", e.getMessage()), headers, HttpStatus.SERVICE_UNAVAILABLE);
+    }
 }
+

@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static ru.gilko.gatewayapi.constants.ProjectConstants.USERNAME_HEADER;
 
+@RestController
 public interface GatewayController {
     @GetMapping(ControllerUrls.CARS_URL)
     PageableCollectionOutDto<CarDto> getAllCars(@RequestParam boolean showAll,
