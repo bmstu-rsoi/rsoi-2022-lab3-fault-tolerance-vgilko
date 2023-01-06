@@ -3,21 +3,20 @@ package ru.gilko.gatewayimpl.wrapper;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 @Data
 public class TryingWrapper {
-    public static final int TIMEOUT = 10;
+    public static final int TIMEOUT = 30;
     private LocalDateTime timoutTimestamp;
     private LocalDateTime lastCall;
     private Supplier<Boolean> runnable;
-    private UUID uuid;
+    private int fullHash;
 
 
-    public TryingWrapper(Supplier<Boolean> runnable) {
+    public TryingWrapper(Supplier<Boolean> runnable, int fullHash) {
         timoutTimestamp = LocalDateTime.now().plusSeconds(TIMEOUT);
-        uuid = UUID.randomUUID();
+        this.fullHash = fullHash;
         this.runnable = runnable;
     }
 }

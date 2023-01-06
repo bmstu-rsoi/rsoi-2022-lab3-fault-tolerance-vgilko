@@ -1,5 +1,6 @@
 package ru.gilko.gatewayimpl.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import ru.gilko.gatewayimpl.wrapper.TryingWrapper;
@@ -13,9 +14,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
 @Component
+@Slf4j
 public class Trying {
 
-    public static final int SLEEP_TIME = 1000;
+    public static final int SLEEP_TIME = 2000;
     public static final int CALL_TIMEOUT = 1000;
 
     private final Queue<TryingWrapper> requests = new LinkedBlockingDeque<>();
@@ -26,7 +28,10 @@ public class Trying {
 
         if (!currentRequestHashes.contains(fullHash)) {
             currentRequestHashes.add(fullHash);
-            requests.add(new TryingWrapper(runnable));
+            TryingWrapper request = new TryingWrapper(runnable, fullHash);
+
+            requests.add(request);
+            log.debug("Added new request {}", request.getFullHash());
         }
     }
 
@@ -36,6 +41,8 @@ public class Trying {
 
     @Async
     public void resendRequests() throws InterruptedException {
+        log.debug("Start resending requests.");
+
         while (true) {
             TryingWrapper request = requests.peek();
 
@@ -53,19 +60,24 @@ public class Trying {
 
         requests.poll();
 
-        if (isTimeout(request, currentTime)) {
-            request.getRunnable().get();
-        } else {
+        if (!isTimeout(request, currentTime)) {
             if (lastCall == null || isNeedCall(lastCall, currentTime)) {
                 boolean isValidRequest = request.getRunnable().get();
+                request.setLastCall(currentTime);
 
                 if (!isValidRequest) {
-                    request.setLastCall(currentTime);
                     requests.add(request);
+
+                    log.debug("Request {} should be reprocessed.", request.getFullHash());
+                } else {
+                    log.debug("Request {} was processed", request.getFullHash());
+                    currentRequestHashes.remove(request.getFullHash());
                 }
             } else {
                 requests.add(request);
             }
+        } else {
+            log.debug("Request {} was deleted from resending queue due timeout", request.getFullHash());
         }
     }
 

@@ -14,6 +14,7 @@ import ru.gilko.gatewayapi.dto.rental.RentalDto;
 import ru.gilko.gatewayapi.dto.wrapper.PageableCollectionOutDto;
 import ru.gilko.gatewayapi.exception.InternalServiceException;
 import ru.gilko.gatewayapi.exception.InvalidOperationException;
+import ru.gilko.gatewayapi.exception.ServiceUnavailableException;
 import ru.gilko.gatewayimpl.service.api.ExternalService;
 import ru.gilko.gatewayimpl.service.api.GatewayService;
 import ru.gilko.gatewayimpl.wrapper.FallbackWrapper;
@@ -47,15 +48,16 @@ public class GatewayServiceImpl implements GatewayService {
 
     @PostConstruct
     void startTrying() {
+
         Thread thread = new Thread(() -> {
             try {
                 trying.resendRequests();
             } catch (InterruptedException e) {
             }
         });
-
-        thread.setDaemon(true);
         thread.start();
+
+        log.debug("PostConstruct was worked");
     }
 
     @Override
@@ -96,6 +98,8 @@ public class GatewayServiceImpl implements GatewayService {
         mappedRental.setCar(modelMapper.map(car, CarBaseDto.class));
         mappedRental.setPayment(modelMapper.map(payment, PaymentDto.class));
 
+        log.debug("RentalDto: {}", mappedRental);
+
         return mappedRental;
     }
 
@@ -112,20 +116,31 @@ public class GatewayServiceImpl implements GatewayService {
 
         FallbackWrapper<PaymentOutDto> payment = createPayment(carBookDto, car.getPrice());
         if (!payment.isValidResponse()) {
+            log.error("Unable to create payment for user [{}] order {}. Rollback changes", userName, carBookDto);
+
             changeCarAvailabilitySafety(car.getCarUid(), true);
+
+            throw new ServiceUnavailableException("Payment Service unavailable");
         }
 
         FallbackWrapper<RentalOutDto> rental = createRental(userName, carBookDto, payment.getValue());
         if (!rental.isValidResponse()) {
+            log.error("Unable to create rental for user [{}] order [{}]. Rollback changes", userName, carBookDto);
+
             changeCarAvailabilitySafety(car.getCarUid(), true);
             externalService.cancelPayment(payment.getValue().getPaymentUid());
+
+            throw new ServiceUnavailableException("Rental Service unavailable");
         }
 
         RentalCreationOutDto rentalCreationOutDto = modelMapper.map(rental.getValue(), RentalCreationOutDto.class);
         rentalCreationOutDto.setPayment(modelMapper.map(payment.getValue(), PaymentDto.class));
         rentalCreationOutDto.setCarUid(carBookDto.getCarUid());
 
+        log.debug("RentalDto after booking car {}", rentalCreationOutDto);
+
         return rentalCreationOutDto;
+
     }
 
     private FallbackWrapper<PaymentOutDto> createPayment(CarBookDto carBookDto, int carRentalPrice) {
@@ -150,10 +165,13 @@ public class GatewayServiceImpl implements GatewayService {
             changeCarAvailabilitySafety(carUid, true);
 
             if (!externalService.finishRental(rentalUid, username)) {
+                log.error("Unable to finish rental [{}] of user [{}]. Request will be resend", rentalUid, username);
                 trying.addRequest(buildHash(username, rentalUid),
                         () -> externalService.finishRental(rentalUid, username));
             }
         } else {
+            log.error("Unable to get rental [{}] of user [{}] from rental service. Request will be resend",
+                    rentalUid, username);
             trying.addRequest(buildHash(username, rentalUid),
                     () -> this.finishRental(username, rentalUid));
             return false;
@@ -166,6 +184,9 @@ public class GatewayServiceImpl implements GatewayService {
         boolean isChanged = externalService.changeCarAvailability(carUid, availability);
 
         if (!isChanged) {
+            log.error("Unable to change car [{}] availability to [{}]. Request will be resend",
+                    carUid, availability);
+
             trying.addRequest(buildHash(carUid, availability),
                     () -> externalService.changeCarAvailability(carUid, availability));
         }
