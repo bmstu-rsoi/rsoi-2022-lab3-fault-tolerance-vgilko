@@ -62,7 +62,7 @@
 							"query": [
 								{
 									"key": "page",
-									"value": "1"
+									"value": "0"
 								},
 								{
 									"key": "size",
@@ -1414,7 +1414,10 @@
 											"    pm.expect(response.car.model).to.be.eq(\"GLA 250\")",
 											"    pm.expect(response.car.registrationNumber).to.be.eq(\"ЛО777Х799\")",
 											"",
-											"    pm.expect(response.payment).to.be.empty",
+											"pm.expect(response.payment).to.be.not.undefined",
+											"pm.expect(response.payment.paymentUid).to.be.not.undefined",
+											"pm.expect(response.payment.status).to.be.eq(null)",
+									"pm.expect(response.payment.price).to.be.eq(0)",
 											"})"
 										],
 										"type": "text/javascript"
